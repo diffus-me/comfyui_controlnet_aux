@@ -7,7 +7,8 @@ class Canny_Edge_Preprocessor:
         return define_preprocessor_inputs(
             low_threshold=INPUT.INT(default=100, max=255),
             high_threshold=INPUT.INT(default=200, max=255),
-            resolution=INPUT.RESOLUTION()
+            resolution=INPUT.RESOLUTION(),
+            upscale_method=INPUT.COMBO(["INTER_NEAREST", "INTER_LINEAR", "INTER_AREA", "INTER_CUBIC", "INTER_LANCZOS4"], default="INTER_CUBIC")
         )
 
     RETURN_TYPES = ("IMAGE",)
@@ -18,7 +19,7 @@ class Canny_Edge_Preprocessor:
     def execute(self, image, low_threshold=100, high_threshold=200, resolution=512, **kwargs):
         from custom_controlnet_aux.canny import CannyDetector
 
-        return (common_annotator_call(CannyDetector(), image, low_threshold=low_threshold, high_threshold=high_threshold, resolution=resolution), )
+        return (common_annotator_call(CannyDetector(), image, low_threshold=low_threshold, high_threshold=high_threshold, resolution=resolution, **kwargs), )
 
 
 

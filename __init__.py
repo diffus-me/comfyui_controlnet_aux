@@ -1,3 +1,4 @@
+import json
 import sys, os
 
 # Disable NPU device initialization and problematic MMCV ops to prevent RuntimeError
@@ -86,7 +87,8 @@ class AIO_Preprocessor:
     def INPUT_TYPES(s):
         return define_preprocessor_inputs(
             preprocessor=INPUT.COMBO(PREPROCESSOR_OPTIONS, default="none"),
-            resolution=INPUT.RESOLUTION()
+            resolution=INPUT.RESOLUTION(),
+            extra_configs=INPUT.STRING(default='{}'),
         )
 
     RETURN_TYPES = ("IMAGE",)
@@ -94,7 +96,7 @@ class AIO_Preprocessor:
 
     CATEGORY = "ControlNet Preprocessors"
 
-    def execute(self, preprocessor, image, resolution=512):
+    def execute(self, preprocessor, image, resolution=512, extra_configs="{}"):
         if preprocessor == "none":
             return (image, )
         else:
@@ -104,7 +106,11 @@ class AIO_Preprocessor:
                 **input_types["required"],
                 **(input_types["optional"] if "optional" in input_types else {})
             }
-            params = {}
+            try:
+                params = json.loads(extra_configs)
+            except Exception as e:
+                log.warning(f"AIO_Preprocessor: failed to parse extra_configs from '{extra_configs}', {e}")
+                params = {}
             for name, input_type in input_types.items():
                 if name == "image":
                     params[name] = image
@@ -112,6 +118,8 @@ class AIO_Preprocessor:
 
                 if name == "resolution":
                     params[name] = resolution
+                    continue
+                if name in params:
                     continue
 
                 if len(input_type) == 2 and ("default" in input_type[1]):
