@@ -45,20 +45,23 @@ class SavePoseKpsAsJsonFile:
             "required": {
                 "pose_kps": ("POSE_KEYPOINT",),
                 "filename_prefix": ("STRING", {"default": "PoseKeypoint"})
-            }
+            },
+            "hidden": {
+                "user_hash": "USER_HASH",
+            },
         }
     RETURN_TYPES = ()
     FUNCTION = "save_pose_kps"
     OUTPUT_NODE = True
     CATEGORY = "ControlNet Preprocessors/Pose Keypoint Postprocess"
     def __init__(self):
-        self.output_dir = folder_paths.get_output_directory()
         self.type = "output"
         self.prefix_append = ""
-    def save_pose_kps(self, pose_kps, filename_prefix):
+    def save_pose_kps(self, pose_kps, filename_prefix, user_hash):
         filename_prefix += self.prefix_append
+        output_dir = folder_paths.get_output_directory(user_hash)
         full_output_folder, filename, counter, subfolder, filename_prefix = \
-            folder_paths.get_save_image_path(filename_prefix, self.output_dir, pose_kps[0]["canvas_width"], pose_kps[0]["canvas_height"])
+            folder_paths.get_save_image_path(filename_prefix, output_dir, pose_kps[0]["canvas_width"], pose_kps[0]["canvas_height"])
         file = f"{filename}_{counter:05}.json"
         with open(os.path.join(full_output_folder, file), 'w') as f:
             json.dump(pose_kps , f)
